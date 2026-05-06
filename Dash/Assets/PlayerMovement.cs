@@ -1,63 +1,73 @@
+using UnityEditor.Media;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class PlayerMovement : MonoBehaviour
 {
-    public float speed = 4f;
-    public float jumpForce = 6f;
+    public float speed =7f;
+    public float jumpForce = 8f;
     public float rotationSpeed = 200f;
-    public float fallLimit = -10f;
 
     private Rigidbody2D rb;
+    private AudioSource audioSource;
     private bool isGrounded = false;
 
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+        audioSource = GetComponent<AudioSource>();
     }
 
     void Update()
     {
+        // Movimiento automático
         rb.linearVelocity = new Vector2(speed, rb.linearVelocity.y);
 
+        // Salto
         if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
         {
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
             isGrounded = false;
         }
 
+        // Rotación en el aire
         if (!isGrounded)
         {
             transform.Rotate(Vector3.forward * -rotationSpeed * Time.deltaTime);
         }
-
-        if (transform.position.y < fallLimit)
-        {
-            RestartGame();
-        }
     }
 
-    void OnCollisionEnter2D(Collision2D collision)
+void OnCollisionEnter2D(Collision2D collision)
 {
+    bool touchedGround = false;
+
     foreach (ContactPoint2D contact in collision.contacts)
     {
-        // toca el piso desde arriba
-        if (contact.normal.y > 0.5f)
+        if (contact.normal.y > 0.4f)
         {
-            isGrounded = true;
-            transform.rotation = Quaternion.identity;
-        }
-
-        // choque lateral contra plataforma/pared
-        if (Mathf.Abs(contact.normal.x) > 0.5f)
-        {
-            RestartGame();
+            touchedGround = true;
         }
     }
+
+    if (touchedGround)
+    {
+        isGrounded = true;
+        transform.rotation = Quaternion.identity;
+        return;
+    }
+
+    RestartGame();
 }
 
-    void RestartGame()
-    {
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-    }
+   void RestartGame()
+{
+    audioSource.Play();
+
+    Invoke(nameof(RestartScene), audioSource.clip.length);
+}
+
+void RestartScene()
+{
+    SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+}
 }
