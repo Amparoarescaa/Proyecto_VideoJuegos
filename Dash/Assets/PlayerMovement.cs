@@ -1,73 +1,107 @@
-using UnityEditor.Media;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using TMPro;
 
 public class PlayerMovement : MonoBehaviour
 {
-    public float speed =7f;
+    public GameObject losePanel;
+    public TMP_Text scoreText;
+
+    public float speed = 7f;
     public float jumpForce = 8f;
     public float rotationSpeed = 200f;
 
     private Rigidbody2D rb;
     private AudioSource audioSource;
     private bool isGrounded = false;
+    private bool isDead = false;
+
+    private float startX;
+    private int score;
 
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
         audioSource = GetComponent<AudioSource>();
+
+        startX = transform.position.x;
+
+        losePanel.SetActive(false);
+
+        Time.timeScale = 1f;
     }
 
     void Update()
     {
-        // Movimiento automático
+        if (isDead)
+        {
+            return;
+        }
+
         rb.linearVelocity = new Vector2(speed, rb.linearVelocity.y);
 
-        // Salto
+        score = Mathf.FloorToInt(transform.position.x - startX);
+
+        scoreText.text = "Puntos: " + score;
+
         if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
         {
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
             isGrounded = false;
         }
 
-        // Rotación en el aire
         if (!isGrounded)
         {
             transform.Rotate(Vector3.forward * -rotationSpeed * Time.deltaTime);
         }
     }
 
-void OnCollisionEnter2D(Collision2D collision)
-{
-    bool touchedGround = false;
-
-    foreach (ContactPoint2D contact in collision.contacts)
+    void OnCollisionEnter2D(Collision2D collision)
     {
-        if (contact.normal.y > 0.4f)
+        if (isDead)
         {
-            touchedGround = true;
+            return;
         }
+
+        bool touchedGround = false;
+
+        foreach (ContactPoint2D contact in collision.contacts)
+        {
+            if (contact.normal.y > 0.4f)
+            {
+                touchedGround = true;
+            }
+        }
+
+        if (touchedGround)
+        {
+            isGrounded = true;
+            transform.rotation = Quaternion.identity;
+            return;
+        }
+
+        LoseGame();
     }
 
-    if (touchedGround)
+    void LoseGame()
     {
-        isGrounded = true;
-        transform.rotation = Quaternion.identity;
-        return;
+        isDead = true;
+
+        rb.linearVelocity = Vector2.zero;
+        rb.angularVelocity = 0f;
+
+        audioSource.Play();
+
+        losePanel.SetActive(true);
+
+        gameObject.SetActive(false);
+
+        Time.timeScale = 0f;
     }
 
-    RestartGame();
-}
-
-   void RestartGame()
-{
-    audioSource.Play();
-
-    Invoke(nameof(RestartScene), audioSource.clip.length);
-}
-
-void RestartScene()
-{
-    SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-}
+    public void PlayAgain()
+    {
+        Time.timeScale = 1f;
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
 }

@@ -1,13 +1,20 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 public class DeathZone : MonoBehaviour
 {
+    public GameObject losePanel;
+
+    void Start()
+    {
+        losePanel.SetActive(false);
+    }
+
     void OnTriggerEnter2D(Collider2D other)
     {
         if (other.CompareTag("Player"))
         {
-            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+            losePanel.SetActive(true);
+            Time.timeScale = 0f;
         }
     }
 }
