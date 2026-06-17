@@ -85,16 +85,17 @@ public class PlayerMovement : MonoBehaviour
 
     void LoseGame()
     {
+        Debug.Log("Lose");
+        audioSource.Play();
         isDead = true;
 
         rb.linearVelocity = Vector2.zero;
         rb.angularVelocity = 0f;
 
-        audioSource.Play();
 
         losePanel.SetActive(true);
 
-        gameObject.SetActive(false);
+        //gameObject.SetActive(false);
 
         Time.timeScale = 0f;
     }
