@@ -1,48 +1,28 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
-using TMPro;
 
 public class PlayerMovement : MonoBehaviour
 {
-    public GameObject losePanel;
-    public TMP_Text scoreText;
-
     public float speed = 7f;
     public float jumpForce = 8f;
     public float rotationSpeed = 200f;
 
     private Rigidbody2D rb;
-    private AudioSource audioSource;
     private bool isGrounded = false;
-    private bool isDead = false;
-
-    private float startX;
-    private int score;
+    private bool canMove = true;
 
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
-        audioSource = GetComponent<AudioSource>();
-
-        startX = transform.position.x;
-
-        losePanel.SetActive(false);
-
-        Time.timeScale = 1f;
     }
 
     void Update()
     {
-        if (isDead)
+        if (!canMove)
         {
             return;
         }
 
         rb.linearVelocity = new Vector2(speed, rb.linearVelocity.y);
-
-        score = Mathf.FloorToInt(transform.position.x - startX);
-
-        scoreText.text = "Puntos: " + score;
 
         if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
         {
@@ -58,7 +38,7 @@ public class PlayerMovement : MonoBehaviour
 
     void OnCollisionEnter2D(Collision2D collision)
     {
-        if (isDead)
+        if (!canMove)
         {
             return;
         }
@@ -80,29 +60,22 @@ public class PlayerMovement : MonoBehaviour
             return;
         }
 
-        LoseGame();
+        if (GameManager.Instance != null)
+        {
+            Debug.Log("Choqué con obstáculo");
+            GameManager.Instance.LoseGame();
+        }
+        else
+        {
+            Debug.LogError("No hay GameManager en la escena");
+        }
     }
 
-    void LoseGame()
+    public void StopMovement()
     {
-        Debug.Log("Lose");
-        audioSource.Play();
-        isDead = true;
+        canMove = false;
 
         rb.linearVelocity = Vector2.zero;
         rb.angularVelocity = 0f;
-
-
-        losePanel.SetActive(true);
-
-        //gameObject.SetActive(false);
-
-        Time.timeScale = 0f;
-    }
-
-    public void PlayAgain()
-    {
-        Time.timeScale = 1f;
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 }

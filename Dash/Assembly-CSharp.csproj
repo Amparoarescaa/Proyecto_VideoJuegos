@@ -49,9 +49,11 @@
     <Analyzer Include="/Applications/Unity/Hub/Editor/6000.3.11f1/Unity.app/Contents/Resources/BuildPipeline/Unity.SourceGenerators/Unity.UIToolkit.SourceGenerator.dll" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets/ScoreManager.cs" />
     <Compile Include="Assets/FinishLine.cs" />
     <Compile Include="Assets/PlayerMovement.cs" />
     <Compile Include="Assets/JumpPad.cs" />
+    <Compile Include="Assets/GameManager.cs" />
     <Compile Include="Assets/JumpOrb.cs" />
     <Compile Include="Assets/DeathZone.cs" />
     <Compile Include="Assets/CameraFollow.cs" />
